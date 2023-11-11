@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { useAccount, useConnect, useDisconnect, useToken, useBalance } from 'wagmi'
+import { parseEther } from 'viem';
+import { useAccount, useConnect, useDisconnect, useToken, useBalance, useSendTransaction } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 
 export function Profile() {
@@ -26,6 +27,13 @@ export function Profile() {
     const getTokenInfo = () => {
         setTokenDetails(token);
     };
+    // les inputs pour envoyer le token 
+    const [to, setTo] = useState('');
+    const [value, setValue] = useState('');
+    const { isLoading, isSuccess, isError, status, sendTransaction } = useSendTransaction({
+        to: to,
+        value: parseEther(value),
+    })
 
     // Une fois il est connecté
     if (isConnected) {
@@ -56,7 +64,34 @@ export function Profile() {
                         <p>Solde: {balence.formatted} {balence.symbol}</p>
                     </div>
                 )}
-            </div>);
+                {/* Transfert de Token */}
+                <div>
+                    <h2>Transfert de Token</h2>
+                    <label>
+                        Destinataire:
+                        <input
+                            type="text"
+                            value={to}
+                            onChange={(e) => setTo(e.target.value)}
+                        />
+                    </label>
+                    <label>
+                        Valeur:
+                        <input
+                            type="number"
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                        />
+                    </label>
+                    <button onClick={() => sendTransaction()}>Envoyer</button>
+                    {/* Statut de la transaction */}
+                    {isLoading && <div>En attente</div>}
+                    {isSuccess && <div>Terminée</div>}
+                    {isError && <div>Erreur</div>}
+                    {/*status && <div>{status}</div>*/}
+                </div>
+            </div>
+        );
     }
     // Button de connexion 
     return <button onClick={() => connect()}>Connecter</button>
